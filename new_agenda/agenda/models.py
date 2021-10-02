@@ -24,12 +24,14 @@ class Evento(models.Model):
         return self.dt_evento.strftime('%Y-%m-%dT%H:%M')
 
     def get_evento_atrasado(self):
+        #if datetime.fromisoformat(self.dt_evento.strftime('%Y-%m-%d %H:%M:%S')) < datetime.now():
         if self.dt_evento < datetime.now():
             return True
         else:
             return False
 
     def get_evento_30min(self):
+        #diferenca = datetime.fromisoformat(self.dt_evento.strftime('%Y-%m-%d %H:%M:%S')) - datetime.now()
         diferenca = self.dt_evento - datetime.now()
         if diferenca <= timedelta(hours=1):
             return True

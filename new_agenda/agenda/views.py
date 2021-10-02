@@ -34,14 +34,15 @@ def submit_login(request):
 def lista_eventos(request):
     usuario = request.user
 
-    try:
-        dt_atual = datetime.now() - timedelta(days=1)  # datas que venceram no dia
-        evento = Evento.objects.filter(usuario=usuario,dt_evento__gt=dt_atual)  # consultando dados no BD - __gt para maior e __lt para menor (comparação);
-        dados = {'eventos': evento}
-        return render(request, 'agenda.html', dados)
+    #try:
+    dt_atual = datetime.now() - timedelta(days=1)  # datas que venceram no dia
+    dt_atual = dt_atual.strftime('%Y-%m-%d %H:%M:%S') 
+    evento = Evento.objects.filter(usuario=usuario,dt_evento__gt=dt_atual)  # consultando dados no BD - __gt para maior e __lt para menor (comparação);
+    dados = {'eventos': evento}
+    return render(request, 'agenda.html', dados)
 
-    except Exception:
-        raise Http404
+    # except Exception:
+    #     raise Http404
 
 @login_required(login_url='/login/')
 def historico_eventos(request):

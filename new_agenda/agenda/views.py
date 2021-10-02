@@ -52,7 +52,6 @@ def historico_eventos(request):
         dt_atual = datetime.now() - timedelta(days=1)  # datas que venceram no dia
         evento = Evento.objects.filter(usuario=usuario,dt_evento__lt=dt_atual)  # consultando dados no BD - __gt para maior e __lt para menor (comparação);
         dados = {'eventos': evento}
-        print(evento)
         return render(request, 'historico.html', dados)
 
     except Exception:
@@ -132,3 +131,7 @@ def json_lista_evento(request, id_usuario):
 #         import traceback
 #         print(traceback.format_exc())
 #         return HttpResponse('<h3>Titulo de Evento Inválido<h3>')
+
+
+#def para trazer em um pop-up/toastr para mostrar os eventos das proximas 24hrs que nao estao sendo exibidos na primeira pagina 
+#sem afetar a paginacao, apenas um alerta.

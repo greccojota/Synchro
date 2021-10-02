@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>Login</h1>
+
+    <form action="submit" method="POST">{% csrf_token %} <!sempre que for um form de requisicao POST é necessário gerar esse token de segurança do certificado csrf;->
+        <div align="center">
+            <label>Usuário</label>
+            <input type="text" name="username">
+            <label>Senha</label>
+            <input type="password" name="password">
+            <button type="submit">Entrar</button>
+        </div>
+    </form>
+
+    {% for message in messages %}
+        <div align="center">
+            <strong>ERRO! </strong>{{ message }}
+        </div>
+    {% endfor %}
+
+</body>
+</html>

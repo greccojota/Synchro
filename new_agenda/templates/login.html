@@ -23,17 +23,22 @@
                     
             </form>
 
-            {% for message in messages %}
-                <div align="center">
-                    <strong>ERRO! </strong>{{ message }}
-                </div>
-            {% endfor %}
-
             <div id="formFooter">
                 <a class="underlineHover" href="#">Esqueceu sua senha?</a>
             </div>
           
         </div>
+
+        <div class="footer">
+            Desenvolvido por João Victor Grecco
+        </div>
+
     </div>
+
+    {% for message in messages %}
+        <div class="alert alert-danger" role="alert" align="center">
+            <strong>ERRO! </strong>{{ message }}
+        </div>
+    {% endfor %}
 
 {% endblock %}

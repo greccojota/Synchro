@@ -1,4 +1,13 @@
 {% extends "model-page.html" %}
+{% load static %}
+
+{% block header %}
+
+    <title>Agenda</title>
+    <link rel="stylesheet" href="{% static 'new_agenda/css/logout-button.css' %}"/>
+    <a class="logoutbutton" href="/logout" style="float: right;">Sair</a>
+    
+{% endblock %}
 
 {% block content %}
     
@@ -25,7 +34,7 @@
 
                     {{  evento.titulo }} - {{ evento.get_data_evento }} - {{ evento.local }}
                     [
-                        <a href="evento/?id={{ evento.id }}">Editar</a> /
+                        <a href="evento/? id={{ evento.id }}">Editar</a> /
                         <a href="evento/delete/{{ evento.id }}/">Excluir</a>
                     ]
 

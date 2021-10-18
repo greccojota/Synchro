@@ -61,8 +61,10 @@ def historico_eventos(request):
 def evento(request):
     id_evento = request.GET.get('id')
     dados = {}
+    print('id_evento:',id_evento)
     if id_evento:
         dados['evento'] = Evento.objects.get(id=id_evento)
+        print('aquiiii >> ', dados)
     return render(request, 'evento.html', dados)
 
 @login_required(login_url='/login/')

@@ -13,6 +13,7 @@ def login_user(request):
 
 def logout_user(request):
     logout(request)
+
     return redirect('/')
 
 def submit_login(request):
@@ -36,7 +37,7 @@ def lista_eventos(request):
 
     #try:
     dt_atual = datetime.now() - timedelta(days=1)  # datas que venceram no dia
-    dt_atual = dt_atual.strftime('%Y-%m-%d %H:%M:%S') 
+    dt_atual = dt_atual.strftime('%Y-%m-%d %H:%M:%S')
     evento = Evento.objects.filter(usuario=usuario,dt_evento__gt=dt_atual)  # consultando dados no BD - __gt para maior e __lt para menor (comparação);
     dados = {'eventos': evento}
     return render(request, 'agenda.html', dados)
@@ -82,7 +83,7 @@ def submit_evento(request):
             if id_evento:
                 Evento.objects.filter(id=id_evento).update(titulo=titulo, dt_evento=dt_evento, descricao=descricao, local=local)
 
-                # ABAIXO ESTA UMA OUTRA OPCAO DE FAZER UMA ALTERAÇÃO/UPDATE;
+                # ABAIXO ESTA UMA OUTRA OPCAO DE FAZER UM UPDATE;
                 # evento = Evento.objects.get(id=id_evento)
                 # if evento.usuario == usuario:
                 #     evento.titulo = titulo

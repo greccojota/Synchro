@@ -1,32 +1,113 @@
 {% extends "model-page.html" %}
 
+{% block title %}{% if evento.id %}Editar Evento{% else %}Novo Evento{% endif %} - Agenda{% endblock %}
+
 {% block content %}
+    <div class="mb-6">
+        <h1 class="page-title">
+            <i data-feather="{% if evento.id %}edit{% else %}plus{% endif %}"></i>
+            {% if evento.id %}Editar Evento{% else %}Novo Evento{% endif %}
+        </h1>
+        <p class="page-subtitle">
+            {% if evento.id %}
+                Atualize as informações do seu evento
+            {% else %}
+                Preencha os detalhes do seu novo evento
+            {% endif %}
+        </p>
+    </div>
 
-    <h2>Evento</h2>
+    <div class="card">
+        <div class="card-header">
+            <h2 style="font-size: 1.25rem; font-weight: 600; margin: 0;">
+                <i data-feather="calendar"></i>
+                Detalhes do Evento
+            </h2>
+        </div>
+        <div class="card-body">
+            <form action="submit" method="POST"> {% csrf_token %}
+                <input type="number" name="id_evento" value="{{ evento.id }}" hidden>
+                
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="form-group">
+                        <label for="titulo" class="form-label">
+                            <i data-feather="type"></i>
+                            Título
+                        </label>
+                        <input type="text" id="titulo" name="titulo" class="form-input" 
+                               value="{{ evento.titulo }}" placeholder="Digite o título do evento" required>
+                    </div>
 
-    <form action="submit" method="POST"> {% csrf_token %}
-        <input type="number" name="id_evento" value="{{ evento.id }}" hidden>
-        <label>Titulo</label>
-        <br>
-        <input type="text" name="titulo" size="24" value="{{ evento.titulo }}">
-        <br>
-        <label>Data do Evento</label>
-        <br>
-        <input type="datetime-local" name="dt_evento" value="{{ evento.get_data_input_evento }}">
-        <br>
-        <label>Descrição</label>
-        <br>
-        <textarea name="descricao" rows="5" cols="24">{{ evento.descricao }}</textarea>
-        <br>
-        <label>Local</label>
-        <br>
-        <input type="text" name="local" value="{{ evento.local }}">
-        <br>
-        <br>
-        <button type="submit">Salvar</button>
-        <a href="/">
-            <button type="button">Cancelar</button>
-        </a>
-    </form>
+                    <div class="grid grid-cols-2">
+                        <div class="form-group">
+                            <label for="dt_evento" class="form-label">
+                                <i data-feather="clock"></i>
+                                Data e Hora
+                            </label>
+                            <input type="datetime-local" id="dt_evento" name="dt_evento" 
+                                   class="form-input" value="{{ evento.get_data_input_evento }}" required>
+                        </div>
 
+                        <div class="form-group">
+                            <label for="local" class="form-label">
+                                <i data-feather="map-pin"></i>
+                                Local
+                            </label>
+                            <div class="address-search-container" style="position: relative;">
+                                <input type="text" id="local" name="local" class="form-input" 
+                                       value="{{ evento.local }}" placeholder="Digite o CEP ou endereço completo">
+                                <div class="address-actions" style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                                    <button type="button" id="searchCep" class="btn btn-secondary btn-sm">
+                                        <i data-feather="search"></i>
+                                        Buscar CEP
+                                    </button>
+                                    <button type="button" id="useLocation" class="btn btn-secondary btn-sm">
+                                        <i data-feather="map"></i>
+                                        Usar Localização
+                                    </button>
+                                </div>
+                                <div id="addressSuggestions" class="address-suggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border-color); border-radius: var(--radius-md); max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: var(--shadow-md);"></div>
+                            </div>
+                            <div id="addressDetails" class="address-details" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--secondary-color); border-radius: var(--radius-md);">
+                                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.875rem; font-weight: 600;">Detalhes do Endereço:</h4>
+                                <div class="address-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descricao" class="form-label">
+                            <i data-feather="file-text"></i>
+                            Descrição
+                        </label>
+                        <textarea id="descricao" name="descricao" class="form-textarea" 
+                                  placeholder="Descreva os detalhes do evento">{{ evento.descricao }}</textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer">
+            <div class="flex gap-4">
+                <button type="submit" form="evento-form" class="btn btn-success">
+                    <i data-feather="save"></i>
+                    {% if evento.id %}Atualizar{% else %}Criar{% endif %} Evento
+                </button>
+                <a href="/" class="btn btn-secondary">
+                    <i data-feather="x"></i>
+                    Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/address-search.js' %}"></script>
+<script>
+    // Add form id to make submit button work
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelector('form').setAttribute('id', 'evento-form');
+    });
+</script>
 {% endblock %}

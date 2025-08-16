@@ -1,25 +1,87 @@
 {% extends "model-page.html" %}
 
+{% block title %}Histórico de Eventos - Agenda{% endblock %}
+
 {% block content %}
-    <h2>Histórico de Eventos</h2>
+    <div class="mb-6">
+        <h1 class="page-title">
+            <i data-feather="archive"></i>
+            Histórico de Eventos
+        </h1>
+        <p class="page-subtitle">Visualize todos os seus eventos passados</p>
+    </div>
 
-    <ul style="font-size: 18px">
-        {% for evento in eventos %}
-            <li>
-                <div>
+    <!-- Back button -->
+    <div class="mb-4">
+        <a href="/" class="btn btn-secondary">
+            <i data-feather="arrow-left"></i>
+            Voltar para Agenda
+        </a>
+    </div>
 
-                    {{  evento.titulo }} - {{ evento.get_data_evento }} - {{ evento.local }}
-                    [
-                        <a href="evento/delete/{{ evento.id }}/">Excluir</a>
-                    ]
+    <!-- Events history -->
+    <div class="card">
+        <div class="card-header">
+            <h2 style="font-size: 1.25rem; font-weight: 600; margin: 0;">
+                <i data-feather="clock"></i>
+                Eventos Anteriores
+            </h2>
+        </div>
+        <div class="card-body">
+            {% if eventos %}
+                <ul class="event-list">
+                    {% for evento in eventos %}
+                        <li class="event-item">
+                            <div class="event-header">
+                                <h3 class="event-title">{{ evento.titulo }}</h3>
+                                <div class="event-actions">
+                                    <a href="evento/delete/{{ evento.id }}/" class="btn btn-danger btn-sm">
+                                        <i data-feather="trash-2"></i>
+                                        Excluir
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="event-meta">
+                                <span>
+                                    <i data-feather="clock"></i>
+                                    {{ evento.get_data_evento }}
+                                </span>
+                                {% if evento.local %}
+                                <span>
+                                    <i data-feather="map-pin"></i>
+                                    {{ evento.local }}
+                                </span>
+                                {% endif %}
+                            </div>
 
+                            {% if evento.descricao %}
+                            <div class="mt-3" style="color: var(--text-secondary); font-size: 0.875rem;">
+                                <i data-feather="file-text"></i>
+                                {{ evento.descricao }}
+                            </div>
+                            {% endif %}
+
+                            <div class="mt-2">
+                                <span class="status-indicator" style="background: rgb(107 114 128 / 0.1); color: var(--text-secondary);">
+                                    <i data-feather="check"></i>
+                                    Concluído
+                                </span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center" style="padding: 3rem;">
+                    <i data-feather="archive" size="48" style="color: var(--text-light); margin-bottom: 1rem;"></i>
+                    <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">Nenhum evento no histórico</h3>
+                    <p style="color: var(--text-light); margin-bottom: 2rem;">Eventos concluídos aparecerão aqui</p>
+                    <a href="/" class="btn btn-primary">
+                        <i data-feather="calendar"></i>
+                        Ver Agenda Atual
+                    </a>
                 </div>
-            </li>
-        {% endfor %}
-    </ul>
-
-    <a href="/">
-        <button type="button">Voltar</button>
-    </a>
-
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

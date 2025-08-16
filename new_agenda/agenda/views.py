@@ -1,20 +1,20 @@
 from django.contrib.auth.models import User
-from django.shortcuts import render, HttpResponse, redirect
-from agenda.models import Evento
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.http import Http404, JsonResponse
+from django.urls import reverse
 from datetime import datetime, timedelta
-from django.http.response import Http404, JsonResponse
-# Create your views here.
+
+from .models import Evento
 
 def login_user(request):
     return render(request, 'login.html')
 
 def logout_user(request):
     logout(request)
-
-    return redirect('/')
+    return redirect('login')
 
 def submit_login(request):
     if request.POST:
@@ -25,116 +25,93 @@ def submit_login(request):
 
         if usuario is not None:
             login(request, usuario)
-            return redirect('/')
+            return redirect('agenda:lista')
         else:
             messages.error(request, 'Usuário ou Senha Inválido.')
 
-    return redirect('/') #redireciona para a pagina principal
+    return redirect('login')
 
 @login_required(login_url='/login/')
 def lista_eventos(request):
-    usuario = request.user
-
-    #try:
-    dt_atual = datetime.now() - timedelta(days=1)  # datas que venceram no dia
-    dt_atual = dt_atual.strftime('%Y-%m-%d %H:%M:%S')
-    evento = Evento.objects.filter(usuario=usuario,dt_evento__gt=dt_atual)  # consultando dados no BD - __gt para maior e __lt para menor (comparação);
-    dados = {'eventos': evento}
-    return render(request, 'agenda.html', dados)
-
-    # except Exception:
-    #     raise Http404
+    """Lista eventos futuros do usuário logado"""
+    dt_atual = datetime.now() - timedelta(days=1)
+    eventos = Evento.objects.filter(
+        usuario=request.user,
+        dt_evento__gt=dt_atual
+    ).order_by('dt_evento')
+    
+    context = {'eventos': eventos}
+    return render(request, 'agenda.html', context)
 
 @login_required(login_url='/login/')
 def historico_eventos(request):
-    usuario = request.user
-
-    try:
-        dt_atual = datetime.now() - timedelta(days=1)  # datas que venceram no dia
-        evento = Evento.objects.filter(usuario=usuario,dt_evento__lt=dt_atual)  # consultando dados no BD - __gt para maior e __lt para menor (comparação);
-        dados = {'eventos': evento}
-        return render(request, 'historico.html', dados)
-
-    except Exception:
-        raise Http404
+    """Lista eventos passados do usuário logado"""
+    dt_atual = datetime.now() - timedelta(days=1)
+    eventos = Evento.objects.filter(
+        usuario=request.user,
+        dt_evento__lt=dt_atual
+    ).order_by('-dt_evento')
+    
+    context = {'eventos': eventos}
+    return render(request, 'historico.html', context)
 
 @login_required(login_url='/login/')
 def evento(request):
+    """Exibe formulário para criar ou editar evento"""
     id_evento = request.GET.get('id')
-    dados = {}
-    print('id_evento:',id_evento)
+    context = {}
+    
     if id_evento:
-        dados['evento'] = Evento.objects.get(id=id_evento)
-        print('aquiiii >> ', dados)
-    return render(request, 'evento.html', dados)
+        evento = get_object_or_404(Evento, id=id_evento, usuario=request.user)
+        context['evento'] = evento
+    
+    return render(request, 'evento.html', context)
 
 @login_required(login_url='/login/')
 def submit_evento(request):
-    if request.POST:
+    """Processa criação ou edição de evento"""
+    if request.method == 'POST':
         titulo = request.POST.get('titulo')
         dt_evento = request.POST.get('dt_evento')
         descricao = request.POST.get('descricao')
         local = request.POST.get('local')
-        usuario = request.user
         id_evento = request.POST.get('id_evento')
 
         try:
-
             if id_evento:
-                Evento.objects.filter(id=id_evento).update(titulo=titulo, dt_evento=dt_evento, descricao=descricao, local=local)
-
-                # ABAIXO ESTA UMA OUTRA OPCAO DE FAZER UM UPDATE;
-                # evento = Evento.objects.get(id=id_evento)
-                # if evento.usuario == usuario:
-                #     evento.titulo = titulo
-                #     evento.dt_evento = dt_evento
-                #     evento.descricao = descricao
-                #     evento.local = local
-                #     evento.save()
-
+                # Atualizar evento existente
+                evento = get_object_or_404(Evento, id=id_evento, usuario=request.user)
+                evento.titulo = titulo
+                evento.dt_evento = dt_evento
+                evento.descricao = descricao
+                evento.local = local
+                evento.save()
+                messages.success(request, 'Evento atualizado com sucesso!')
             else:
-                Evento.objects.create(titulo=titulo, dt_evento=dt_evento, descricao=descricao, local=local, usuario=usuario) #inserindo dados na tabela evendo no BD
+                # Criar novo evento
+                Evento.objects.create(
+                    titulo=titulo,
+                    dt_evento=dt_evento,
+                    descricao=descricao,
+                    local=local,
+                    usuario=request.user
+                )
+                messages.success(request, 'Evento criado com sucesso!')
+        except Exception as e:
+            messages.error(request, 'Erro ao salvar evento. Tente novamente.')
 
-        except Exception:
-            raise Http404
-
-    return redirect('/')
+    return redirect('agenda:lista')
 
 @login_required(login_url='/login/')
 def delete_evento(request, id_evento):
-    usuario = request.user
-
-    try:
-        evento = Evento.objects.get(id=id_evento)
-
-        if usuario == evento.usuario:
-            evento.delete()
-        else:
-            raise Http404()
-
-    except Exception:
-        raise Http404
-
-    return redirect('/')
+    """Deleta evento do usuário"""
+    evento = get_object_or_404(Evento, id=id_evento, usuario=request.user)
+    evento.delete()
+    messages.success(request, 'Evento excluído com sucesso!')
+    return redirect('agenda:lista')
 
 def json_lista_evento(request, id_usuario):
-    usuario = User.objects.get(id=id_usuario)
-    evento = Evento.objects.filter(usuario=usuario).values('id','titulo')
-    return JsonResponse(list(evento), safe=False)
-
-# def index(request):
-#     return redirect('admin/')
-
-#def do exercicio da aula 5 - Criando tabelas com models
-# def localEvento(request, titulo_evento):
-#     try:
-#         evento = Evento.objects.get(titulo=titulo_evento)
-#         return HttpResponse('<h3>Local da Consulta: {}<h3>'.format(evento.local))
-#     except Exception:
-#         import traceback
-#         print(traceback.format_exc())
-#         return HttpResponse('<h3>Titulo de Evento Inválido<h3>')
-
-
-#def para trazer em um pop-up/toastr para mostrar os eventos das proximas 24hrs que nao estao sendo exibidos na primeira pagina 
-#sem afetar a paginacao, apenas um alerta.
+    """API endpoint para listar eventos de um usuário (JSON)"""
+    usuario = get_object_or_404(User, id=id_usuario)
+    eventos = Evento.objects.filter(usuario=usuario).values('id', 'titulo')
+    return JsonResponse(list(eventos), safe=False)

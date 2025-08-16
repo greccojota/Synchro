@@ -14,24 +14,22 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from agenda import views
+from django.urls import path, include
 from django.views.generic import RedirectView
+from agenda import views as agenda_views
 
 urlpatterns = [
+    # Admin
     path('admin/', admin.site.urls),
-    path('agenda/', views.lista_eventos),
-    path('agenda/historico/', views.historico_eventos),
-    #path('agenda/lista/', views.json_lista_evento),
-    path('agenda/lista/<int:id_usuario>/', views.json_lista_evento),
-    path('agenda/evento/', views.evento),
-    path('agenda/evento/submit', views.submit_evento),
-    path('agenda/evento/delete/<int:id_evento>/', views.delete_evento),
-    path('agenda/historico/evento/delete/<int:id_evento>/', views.delete_evento),
-    path('', RedirectView.as_view(url='/agenda/')),
-    path('login/', views.login_user),
-    path('login/submit', views.submit_login),
-    path('logout/', views.logout_user)
-
-    #path('eventos/<titulo_evento>', views.localEvento), # rota criada para o exercicio da aula 5 - Criando tabelas com models
+    
+    # Agenda URLs
+    path('agenda/', include('agenda.urls')),
+    
+    # Authentication
+    path('login/', agenda_views.login_user, name='login'),
+    path('login/submit/', agenda_views.submit_login, name='submit_login'),
+    path('logout/', agenda_views.logout_user, name='logout'),
+    
+    # Redirect root to agenda
+    path('', RedirectView.as_view(url='/agenda/', permanent=False), name='home'),
 ]

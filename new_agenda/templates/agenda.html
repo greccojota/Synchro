@@ -1,0 +1,102 @@
+{% extends "model-page.html" %}
+{% load static %}
+
+{% block title %}Minha Agenda{% endblock %}
+
+{% block content %}
+    <div class="mb-6">
+        <h1 class="page-title">Minha Agenda</h1>
+        <p class="page-subtitle">Gerencie seus compromissos de forma simples e organizada</p>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="grid grid-cols-2 mb-6">
+        <a href="evento/" class="btn btn-primary">
+            <i data-feather="plus"></i>
+            Novo Evento
+        </a>
+        <a href="historico/" class="btn btn-secondary">
+            <i data-feather="archive"></i>
+            Histórico
+        </a>
+    </div>
+
+    <!-- Events section -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="mb-0" style="font-size: 1.25rem; font-weight: 600;">
+                <i data-feather="calendar"></i>
+                Próximos Eventos
+            </h2>
+        </div>
+        <div class="card-body">
+            {% if eventos %}
+                <ul class="event-list">
+                    {% for evento in eventos %}
+                        <li class="event-item {% if evento.get_evento_atrasado %}overdue{% elif evento.get_evento_30min %}upcoming{% endif %}">
+                            <div class="event-header">
+                                <h3 class="event-title">{{ evento.titulo }}</h3>
+                                <div class="event-actions">
+                                    <a href="evento/?id={{ evento.id }}" class="btn btn-secondary btn-sm">
+                                        <i data-feather="edit"></i>
+                                        Editar
+                                    </a>
+                                    <a href="evento/delete/{{ evento.id }}/" class="btn btn-danger btn-sm">
+                                        <i data-feather="trash-2"></i>
+                                        Excluir
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="event-meta">
+                                <span>
+                                    <i data-feather="clock"></i>
+                                    {{ evento.get_data_evento }}
+                                </span>
+                                {% if evento.local %}
+                                <span>
+                                    <i data-feather="map-pin"></i>
+                                    {{ evento.local }}
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            {% if evento.get_evento_atrasado %}
+                                <div class="mt-2">
+                                    <span class="status-indicator status-overdue">
+                                        <i data-feather="alert-circle"></i>
+                                        Atrasado
+                                    </span>
+                                </div>
+                            {% elif evento.get_evento_30min %}
+                                <div class="mt-2">
+                                    <span class="status-indicator status-upcoming">
+                                        <i data-feather="clock"></i>
+                                        Próximo
+                                    </span>
+                                </div>
+                            {% else %}
+                                <div class="mt-2">
+                                    <span class="status-indicator status-normal">
+                                        <i data-feather="check-circle"></i>
+                                        Agendado
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center" style="padding: 3rem;">
+                    <i data-feather="calendar" size="48" style="color: var(--text-light); margin-bottom: 1rem;"></i>
+                    <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">Nenhum evento agendado</h3>
+                    <p style="color: var(--text-light); margin-bottom: 2rem;">Comece criando seu primeiro evento</p>
+                    <a href="evento/" class="btn btn-primary">
+                        <i data-feather="plus"></i>
+                        Criar Primeiro Evento
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Agenda{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{% static 'new_agenda/css/main.css' %}">
+    
+    {% block extra_css %} {% endblock %}
+</head>
+<body>
+    <div class="page-wrapper">
+        {% if user.is_authenticated %}
+        <header class="header">
+            <div class="container">
+                <nav class="nav">
+                    <a href="/" class="nav-brand">
+                        <i data-feather="calendar"></i>
+                        Minha Agenda
+                    </a>
+                    <div class="nav-actions">
+                        <span class="text-secondary">Olá, {{ user.first_name|default:user.username }}!</span>
+                        <a href="/logout" class="btn btn-secondary btn-sm">
+                            <i data-feather="log-out"></i>
+                            Sair
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </header>
+        {% endif %}
+
+        <main class="main">
+            <div class="container">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="container">
+                <p>&copy; 2024 Desenvolvido por João Victor Grecco</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize Feather icons
+        feather.replace();
+    </script>
+    {% block extra_js %} {% endblock %}
+</body>
+</html>

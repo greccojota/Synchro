@@ -1,0 +1,300 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Synchro{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{% static 'agenda/css/main.css' %}">
+    
+    {% block extra_css %} {% endblock %}
+</head>
+<body>
+    <div class="app-layout">
+        {% if user.is_authenticated %}
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="brand-icon">
+                        <i data-feather="zap"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h1 class="brand-name">Synchro</h1>
+                        <p class="brand-tagline">Sincronize sua vida</p>
+                    </div>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i data-feather="chevron-left"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <!-- Dashboard -->
+                <div class="nav-section">
+                    <a href="{% url 'agenda:dashboard' %}" class="nav-item">
+                        <i data-feather="home"></i>
+                        <span class="nav-text">Início</span>
+                    </a>
+                </div>
+
+                <!-- Agenda -->
+                <div class="nav-section">
+                    <p class="nav-section-title">📅 Agenda</p>
+                    <a href="{% url 'agenda:lista' %}" class="nav-item">
+                        <i data-feather="calendar"></i>
+                        <span class="nav-text">Meus Eventos</span>
+                    </a>
+                    <a href="{% url 'agenda:evento' %}" class="nav-item">
+                        <i data-feather="plus"></i>
+                        <span class="nav-text">Adicionar Evento</span>
+                    </a>
+                    <a href="{% url 'agenda:historico' %}" class="nav-item">
+                        <i data-feather="clock"></i>
+                        <span class="nav-text">Eventos Passados</span>
+                    </a>
+                </div>
+
+                <!-- Organização -->
+                <div class="nav-section">
+                    <p class="nav-section-title">🏷️ Organização</p>
+                    <a href="{% url 'agenda:categorias' %}" class="nav-item">
+                        <i data-feather="folder"></i>
+                        <span class="nav-text">Categorias</span>
+                    </a>
+                    <a href="#" class="nav-item nav-item-disabled">
+                        <i data-feather="bell"></i>
+                        <span class="nav-text">Lembretes</span>
+                        <span class="nav-badge">Em breve</span>
+                    </a>
+                    <a href="#" class="nav-item nav-item-disabled">
+                        <i data-feather="refresh-cw"></i>
+                        <span class="nav-text">Eventos Recorrentes</span>
+                        <span class="nav-badge">Em breve</span>
+                    </a>
+                </div>
+
+                <!-- Ferramentas -->
+                <div class="nav-section">
+                    <p class="nav-section-title">⚡ Ferramentas</p>
+                    <a href="#" class="nav-item nav-item-disabled">
+                        <i data-feather="calendar-days" style="display: none;"></i>
+                        <i data-feather="grid"></i>
+                        <span class="nav-text">Visualização Mensal</span>
+                        <span class="nav-badge">Em breve</span>
+                    </a>
+                    <a href="#" class="nav-item nav-item-disabled">
+                        <i data-feather="file-text"></i>
+                        <span class="nav-text">Relatórios</span>
+                        <span class="nav-badge">Em breve</span>
+                    </a>
+                    <a href="#" class="nav-item nav-item-disabled">
+                        <i data-feather="share"></i>
+                        <span class="nav-text">Exportar Dados</span>
+                        <span class="nav-badge">Em breve</span>
+                    </a>
+                </div>
+
+                <!-- Conta -->
+                <div class="nav-section">
+                    <p class="nav-section-title">👤 Conta</p>
+                    <a href="{% url 'agenda:perfil' %}" class="nav-item">
+                        <i data-feather="user"></i>
+                        <span class="nav-text">Meu Perfil</span>
+                    </a>
+                    <a href="#" class="nav-item nav-item-disabled">
+                        <i data-feather="crown"></i>
+                        <span class="nav-text">Planos Premium</span>
+                        <span class="nav-badge">Em breve</span>
+                    </a>
+                    <a href="#" class="nav-item nav-item-disabled">
+                        <i data-feather="settings"></i>
+                        <span class="nav-text">Configurações</span>
+                        <span class="nav-badge">Em breve</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- User Info -->
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {% if user.perfil.foto %}
+                            <img src="{{ user.perfil.foto.url }}" alt="Avatar">
+                        {% else %}
+                            <div class="avatar-placeholder">
+                                {{ user.first_name|first|default:user.username|first }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="user-details">
+                        <p class="user-name">{{ user.first_name|default:user.username }}</p>
+                        <p class="user-plan">
+                            {% if user.perfil.plano == 'free' %}
+                                <span class="plan-badge free">Gratuito</span>
+                            {% elif user.perfil.plano == 'premium' %}
+                                <span class="plan-badge premium">Premium</span>
+                            {% elif user.perfil.plano == 'enterprise' %}
+                                <span class="plan-badge enterprise">Empresarial</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <a href="/logout" class="logout-btn" title="Sair">
+                    <i data-feather="log-out"></i>
+                </a>
+            </div>
+        </aside>
+        {% endif %}
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Top Bar com Atalhos -->
+            {% if user.is_authenticated %}
+            <div class="topbar">
+                <div class="topbar-content">
+                    <div class="topbar-left">
+                        <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                        <p class="page-subtitle">{% block page_subtitle %}{% endblock %}</p>
+                    </div>
+                    
+                    <div class="topbar-shortcuts">
+                        <button class="shortcut-btn shortcut-btn-primary" onclick="location.href='{% url 'agenda:evento' %}'" title="Criar novo evento rapidamente">
+                            <i data-feather="plus"></i>
+                            <span class="shortcut-text">Novo Evento</span>
+                        </button>
+                        <button class="shortcut-btn" onclick="location.href='{% url 'agenda:lista' %}'" title="Ver todos os eventos">
+                            <i data-feather="calendar"></i>
+                            <span class="shortcut-text">Agenda</span>
+                        </button>
+                        <button class="shortcut-btn" onclick="location.href='{% url 'agenda:categorias' %}'" title="Gerenciar categorias">
+                            <i data-feather="folder"></i>
+                            <span class="shortcut-text">Categorias</span>
+                        </button>
+                        <div class="user-actions">
+                            <button class="user-menu-btn" onclick="toggleUserMenu()" title="Menu do usuário">
+                                <div class="user-avatar-small">
+                                    {% if user.perfil.foto %}
+                                        <img src="{{ user.perfil.foto.url }}" alt="Avatar">
+                                    {% else %}
+                                        {{ user.first_name|first|default:user.username|first }}
+                                    {% endif %}
+                                </div>
+                                <i data-feather="chevron-down" style="width: 16px; height: 16px;"></i>
+                            </button>
+                            <div class="user-menu" id="userMenu" style="display: none;">
+                                <a href="{% url 'agenda:perfil' %}" class="user-menu-item">
+                                    <i data-feather="user"></i>
+                                    Meu Perfil
+                                </a>
+                                <a href="{% url 'agenda:dashboard' %}" class="user-menu-item">
+                                    <i data-feather="home"></i>
+                                    Dashboard
+                                </a>
+                                <div class="user-menu-divider"></div>
+                                <a href="/logout" class="user-menu-item user-menu-logout">
+                                    <i data-feather="log-out"></i>
+                                    Sair
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <div class="container">
+                    <!-- Messages -->
+                    {% if messages %}
+                        <div class="messages-container">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">
+                                    <div class="alert-content">
+                                        <i data-feather="{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}x-circle{% elif message.tags == 'warning' %}alert-triangle{% else %}info{% endif %}"></i>
+                                        <span>{{ message }}</span>
+                                    </div>
+                                    <button class="alert-close" onclick="this.parentElement.remove()">
+                                        <i data-feather="x"></i>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="container">
+                    <p>&copy; 2025 Desenvolvido por jcode technology</p>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Initialize Feather icons
+        feather.replace();
+
+        // Sidebar toggle functionality
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                
+                // Rotate toggle icon
+                const icon = sidebarToggle.querySelector('svg');
+                if (sidebar.classList.contains('collapsed')) {
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            });
+        }
+
+        // Auto-close alerts after 5 seconds
+        document.querySelectorAll('.alert').forEach(alert => {
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        });
+
+        // User menu functionality
+        window.toggleUserMenu = function() {
+            const userMenu = document.getElementById('userMenu');
+            const isVisible = userMenu.style.display !== 'none';
+            userMenu.style.display = isVisible ? 'none' : 'block';
+        };
+
+        // Close user menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const userMenu = document.getElementById('userMenu');
+            const userMenuBtn = document.querySelector('.user-menu-btn');
+            
+            if (userMenu && userMenuBtn && 
+                !userMenu.contains(event.target) && 
+                !userMenuBtn.contains(event.target)) {
+                userMenu.style.display = 'none';
+            }
+        });
+    </script>
+    {% block extra_js %} {% endblock %}
+</body>
+</html>

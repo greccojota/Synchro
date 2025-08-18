@@ -1,0 +1,138 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block title %}Histórico de Eventos - Synchro{% endblock %}
+{% block page_title %}Histórico de Eventos{% endblock %}
+{% block page_subtitle %}Visualize todos os seus eventos passados{% endblock %}
+
+{% block content %}
+
+    <!-- Filtros e Estatísticas -->
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-body">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h4 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-feather="bar-chart-2"></i>
+                        Resumo do Histórico
+                    </h4>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.875rem;">
+                        Total de {{ eventos|length }} evento{{ eventos|length|pluralize:"s" }} concluído{{ eventos|length|pluralize:"s" }}
+                    </p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="{% url 'agenda:lista' %}" class="btn btn-primary">
+                        <i data-feather="calendar"></i>
+                        Eventos Atuais
+                    </a>
+                    <a href="{% url 'agenda:evento' %}" class="btn btn-secondary">
+                        <i data-feather="plus"></i>
+                        Novo Evento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Eventos do Histórico -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i data-feather="archive"></i>
+                Eventos Passados
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if eventos %}
+                <div style="display: grid; gap: 1rem;">
+                    {% for evento in eventos %}
+                        <div style="border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; background: var(--bg-primary);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 0.5rem 0; font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">
+                                        {{ evento.titulo }}
+                                    </h4>
+                                    {% if evento.categoria %}
+                                        <span style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.75rem; background: {{ evento.categoria.cor }}20; color: {{ evento.categoria.cor }}; border-radius: 9999px; font-size: 0.75rem; font-weight: 500;">
+                                            <i data-feather="{{ evento.categoria.icone }}" style="width: 12px; height: 12px;"></i>
+                                            {{ evento.categoria.nome }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    {% if evento.id %}
+                                        <a href="{% url 'agenda:evento' %}?id={{ evento.id }}" class="btn btn-secondary btn-sm" title="Duplicar evento">
+                                            <i data-feather="copy"></i>
+                                        </a>
+                                        <a href="{% url 'agenda:delete_evento' evento.id %}" 
+                                           class="btn btn-danger btn-sm"
+                                           onclick="return confirm('Tem certeza que deseja excluir este evento do histórico?')"
+                                           title="Excluir evento">
+                                            <i data-feather="trash-2"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <i data-feather="calendar" style="width: 16px; height: 16px;"></i>
+                                    <strong>{{ evento.get_data_evento }}</strong>
+                                </div>
+                                {% if evento.local %}
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <i data-feather="map-pin" style="width: 16px; height: 16px;"></i>
+                                    {{ evento.local }}
+                                </div>
+                                {% endif %}
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <i data-feather="flag" style="width: 16px; height: 16px;"></i>
+                                    Prioridade {{ evento.get_prioridade_display }}
+                                </div>
+                            </div>
+
+                            {% if evento.descricao %}
+                            <div style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md); font-size: 0.875rem; color: var(--text-secondary);">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <i data-feather="file-text" style="width: 16px; height: 16px;"></i>
+                                    <strong>Descrição:</strong>
+                                </div>
+                                {{ evento.descricao }}
+                            </div>
+                            {% endif %}
+
+                            <div style="display: flex; justify-content: between; align-items: center;">
+                                <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--success-color)20; color: var(--success-color); border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 500;">
+                                    <i data-feather="check-circle" style="width: 16px; height: 16px;"></i>
+                                    Evento Concluído
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 4rem 2rem;">
+                    <div style="margin-bottom: 2rem;">
+                        <i data-feather="archive" style="width: 64px; height: 64px; color: var(--text-light);"></i>
+                    </div>
+                    <h3 style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 1.5rem;">
+                        Nenhum evento no histórico
+                    </h3>
+                    <p style="color: var(--text-light); margin-bottom: 2rem; font-size: 1rem;">
+                        Quando você concluir eventos, eles aparecerão aqui para consulta
+                    </p>
+                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <a href="{% url 'agenda:evento' %}" class="btn btn-primary">
+                            <i data-feather="plus"></i>
+                            Criar Primeiro Evento
+                        </a>
+                        <a href="{% url 'agenda:lista' %}" class="btn btn-secondary">
+                            <i data-feather="calendar"></i>
+                            Ver Agenda Atual
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

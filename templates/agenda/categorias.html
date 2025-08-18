@@ -1,0 +1,451 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block title %}Categorias - Synchro{% endblock %}
+{% block page_title %}Categorias{% endblock %}
+{% block page_subtitle %}Organize seus eventos por categorias{% endblock %}
+
+{% block content %}
+    <div class="categories-layout">
+        <!-- Create Category Form -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i data-feather="plus-circle"></i>
+                    Nova Categoria
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="category-form">{% csrf_token %}
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="id_nome" class="form-label">Nome</label>
+                            {{ form.nome }}
+                            {% if form.nome.errors %}
+                                <div class="text-danger">{{ form.nome.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_icone" class="form-label">Ícone</label>
+                            {{ form.icone }}
+                            {% if form.icone.errors %}
+                                <div class="text-danger">{{ form.icone.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_cor" class="form-label">Cor</label>
+                        <div class="color-picker-wrapper">
+                            {{ form.cor }}
+                            <div class="color-preview" id="colorPreview"></div>
+                        </div>
+                        {% if form.cor.errors %}
+                            <div class="text-danger">{{ form.cor.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_descricao" class="form-label">Descrição</label>
+                        {{ form.descricao }}
+                        {% if form.descricao.errors %}
+                            <div class="text-danger">{{ form.descricao.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="save"></i>
+                        Criar Categoria
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Categories List -->
+        <div class="card">
+            <div class="card-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 class="card-title">
+                        <i data-feather="tag"></i>
+                        Suas Categorias ({{ categorias|length }})
+                    </h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="{% url 'agenda:evento' %}" class="btn btn-primary btn-sm">
+                            <i data-feather="plus"></i>
+                            Novo Evento
+                        </a>
+                        <a href="{% url 'agenda:lista' %}" class="btn btn-secondary btn-sm">
+                            <i data-feather="calendar"></i>
+                            Ver Agenda
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if categorias %}
+                    <div class="categories-grid">
+                        {% for categoria in categorias %}
+                        <div class="categoria-card">
+                            <div class="categoria-header">
+                                <div class="categoria-visual">
+                                    <div class="categoria-cor" style="background-color: {{ categoria.cor }}">
+                                        <i data-feather="{{ categoria.icone }}"></i>
+                                    </div>
+                                    <div class="categoria-info">
+                                        <h4 class="categoria-nome">{{ categoria.nome }}</h4>
+                                        {% if categoria.descricao %}
+                                            <p class="categoria-descricao">{{ categoria.descricao }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="categoria-stats">
+                                    <span class="eventos-count" style="background-color: {{ categoria.cor }}20; color: {{ categoria.cor }};">
+                                        {{ categoria.eventos.count }} evento{{ categoria.eventos.count|pluralize:"s" }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Eventos Recentes desta Categoria -->
+                            {% if categoria.eventos.all|slice:":3" %}
+                            <div style="margin: 1rem 0; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius-md);">
+                                <h5 style="margin: 0 0 0.75rem 0; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+                                    <i data-feather="calendar" style="width: 14px; height: 14px;"></i>
+                                    Eventos Recentes
+                                </h5>
+                                <div style="display: grid; gap: 0.5rem;">
+                                    {% for evento in categoria.eventos.all|slice:":3" %}
+                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem;">
+                                        <span style="color: var(--text-primary); font-weight: 500;">{{ evento.titulo|truncatechars:25 }}</span>
+                                        <span style="color: var(--text-secondary); font-size: 0.75rem;">{{ evento.dt_evento|date:"d/m" }}</span>
+                                    </div>
+                                    {% endfor %}
+                                    {% if categoria.eventos.count > 3 %}
+                                    <div style="text-align: center; margin-top: 0.5rem;">
+                                        <a href="{% url 'agenda:lista' %}?categoria={{ categoria.id }}" style="color: var(--primary-color); font-size: 0.75rem; text-decoration: none;">
+                                            Ver todos os {{ categoria.eventos.count }} eventos →
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="categoria-actions">
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <a href="{% url 'agenda:evento' %}?categoria={{ categoria.id }}" class="btn btn-primary btn-sm" title="Criar evento nesta categoria">
+                                        <i data-feather="plus"></i>
+                                        Novo Evento
+                                    </a>
+                                    <a href="{% url 'agenda:editar_categoria' categoria.id %}" class="btn btn-secondary btn-sm" title="Editar categoria">
+                                        <i data-feather="edit"></i>
+                                        Editar
+                                    </a>
+                                    {% if categoria.eventos.count == 0 %}
+                                    <form method="POST" action="{% url 'agenda:deletar_categoria' categoria.id %}" class="inline-form" onsubmit="return confirm('Tem certeza que deseja excluir esta categoria?')">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Excluir categoria">
+                                            <i data-feather="trash-2"></i>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <button class="btn btn-secondary btn-sm" disabled title="Não é possível excluir categoria com eventos">
+                                        <i data-feather="lock"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div style="margin-bottom: 2rem;">
+                            <i data-feather="tag" style="width: 64px; height: 64px; color: var(--text-light);"></i>
+                        </div>
+                        <h3>Nenhuma categoria criada</h3>
+                        <p>Crie categorias para organizar melhor seus eventos e facilitar a busca</p>
+                        
+                        <!-- Sugestões de Categorias -->
+                        <div style="margin-top: 2rem; padding: 1.5rem; background: var(--bg-secondary); border-radius: var(--radius-lg); text-align: left;">
+                            <h4 style="margin: 0 0 1rem 0; text-align: center; color: var(--text-primary);">
+                                💡 Sugestões de Categorias
+                            </h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.875rem;">
+                                <div class="category-suggestion" onclick="fillCategoryForm('Trabalho', '#3b82f6', 'briefcase')">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md); transition: background 0.2s;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i data-feather="briefcase" style="width: 12px; height: 12px; color: white;"></i>
+                                        </div>
+                                        <span>Trabalho</span>
+                                    </div>
+                                </div>
+                                <div class="category-suggestion" onclick="fillCategoryForm('Pessoal', '#ef4444', 'heart')">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md); transition: background 0.2s;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i data-feather="heart" style="width: 12px; height: 12px; color: white;"></i>
+                                        </div>
+                                        <span>Pessoal</span>
+                                    </div>
+                                </div>
+                                <div class="category-suggestion" onclick="fillCategoryForm('Estudos', '#10b981', 'book')">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md); transition: background 0.2s;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i data-feather="book" style="width: 12px; height: 12px; color: white;"></i>
+                                        </div>
+                                        <span>Estudos</span>
+                                    </div>
+                                </div>
+                                <div class="category-suggestion" onclick="fillCategoryForm('Reunião', '#f59e0b', 'users')">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md); transition: background 0.2s;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i data-feather="users" style="width: 12px; height: 12px; color: white;"></i>
+                                        </div>
+                                        <span>Reunião</span>
+                                    </div>
+                                </div>
+                                <div class="category-suggestion" onclick="fillCategoryForm('Saúde', '#8b5cf6', 'activity')">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md); transition: background 0.2s;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: #8b5cf6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i data-feather="activity" style="width: 12px; height: 12px; color: white;"></i>
+                                        </div>
+                                        <span>Saúde</span>
+                                    </div>
+                                </div>
+                                <div class="category-suggestion" onclick="fillCategoryForm('Viagem', '#14b8a6', 'map')">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md); transition: background 0.2s;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: #14b8a6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i data-feather="map" style="width: 12px; height: 12px; color: white;"></i>
+                                        </div>
+                                        <span>Viagem</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary); font-size: 0.75rem;">
+                                Clique em uma sugestão para preencher automaticamente o formulário
+                            </p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.categories-layout {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 2rem;
+}
+
+.category-suggestion:hover > div {
+    background: var(--bg-tertiary) !important;
+}
+
+.category-form .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.color-preview {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    background: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.categories-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.categoria-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    background: var(--bg-primary);
+    transition: all 0.2s ease;
+}
+
+.categoria-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-md);
+}
+
+.categoria-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.categoria-visual {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.categoria-cor {
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+.categoria-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.categoria-nome {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+}
+
+.categoria-descricao {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.categoria-stats {
+    text-align: right;
+}
+
+.eventos-count {
+    display: inline-block;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.categoria-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .categories-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .category-form .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .categoria-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .categoria-visual {
+        width: 100%;
+    }
+    
+    .categoria-stats {
+        text-align: left;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const colorInput = document.getElementById('id_cor');
+    const colorPreview = document.getElementById('colorPreview');
+    
+    if (colorInput && colorPreview) {
+        // Set initial color
+        colorPreview.style.backgroundColor = colorInput.value;
+        
+        // Update preview when color changes
+        colorInput.addEventListener('input', function() {
+            colorPreview.style.backgroundColor = this.value;
+        });
+    }
+    
+    // Re-initialize feather icons after any dynamic content
+    feather.replace();
+});
+
+// Function to fill category form with suggestions
+function fillCategoryForm(name, color, icon) {
+    const nameInput = document.getElementById('id_nome');
+    const colorInput = document.getElementById('id_cor');
+    const iconInput = document.getElementById('id_icone');
+    const colorPreview = document.getElementById('colorPreview');
+    
+    if (nameInput) nameInput.value = name;
+    if (colorInput) colorInput.value = color;
+    if (iconInput) iconInput.value = icon;
+    if (colorPreview) colorPreview.style.backgroundColor = color;
+    
+    // Scroll to form
+    document.querySelector('.category-form').scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+    });
+    
+    // Focus on name input
+    if (nameInput) {
+        setTimeout(() => nameInput.focus(), 500);
+    }
+}
+</script>
+{% endblock %}

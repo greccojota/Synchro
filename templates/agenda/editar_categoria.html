@@ -1,0 +1,291 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block title %}Editar Categoria - Synchro{% endblock %}
+{% block page_title %}Editar Categoria{% endblock %}
+{% block page_subtitle %}Modificar categoria "{{ categoria.nome }}"{% endblock %}
+
+{% block content %}
+    <div class="edit-category-layout">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i data-feather="edit"></i>
+                    Editar Categoria
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="category-form">{% csrf_token %}
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="id_nome" class="form-label">Nome</label>
+                            {{ form.nome }}
+                            {% if form.nome.errors %}
+                                <div class="text-danger">{{ form.nome.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_icone" class="form-label">Ícone</label>
+                            {{ form.icone }}
+                            {% if form.icone.errors %}
+                                <div class="text-danger">{{ form.icone.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_cor" class="form-label">Cor</label>
+                        <div class="color-picker-wrapper">
+                            {{ form.cor }}
+                            <div class="color-preview" id="colorPreview" style="background-color: {{ categoria.cor }}"></div>
+                        </div>
+                        {% if form.cor.errors %}
+                            <div class="text-danger">{{ form.cor.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_descricao" class="form-label">Descrição</label>
+                        {{ form.descricao }}
+                        {% if form.descricao.errors %}
+                            <div class="text-danger">{{ form.descricao.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="save"></i>
+                            Salvar Alterações
+                        </button>
+                        <a href="{% url 'agenda:categorias' %}" class="btn btn-secondary">
+                            <i data-feather="arrow-left"></i>
+                            Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Preview Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i data-feather="eye"></i>
+                    Visualização
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="category-preview">
+                    <div class="preview-item">
+                        <div class="categoria-cor-preview" id="categoriaCorPreview" style="background-color: {{ categoria.cor }}">
+                            <i data-feather="{{ categoria.icone }}" id="categoriaIconePreview"></i>
+                        </div>
+                        <div class="categoria-info-preview">
+                            <h4 class="categoria-nome-preview" id="categoriaNomePreview">{{ categoria.nome }}</h4>
+                            <p class="categoria-descricao-preview" id="categoriaDescricaoPreview">{{ categoria.descricao|default:"Sem descrição" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="usage-info">
+                        <div class="usage-stats">
+                            <div class="usage-item">
+                                <i data-feather="calendar"></i>
+                                <span>{{ categoria.eventos.count }} eventos usando esta categoria</span>
+                            </div>
+                            <div class="usage-item">
+                                <i data-feather="clock"></i>
+                                <span>Criada em {{ categoria.dt_criacao|date:"d/m/Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.edit-category-layout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 2rem;
+    max-width: 1000px;
+}
+
+.category-form .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.color-preview {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.category-preview {
+    text-align: center;
+}
+
+.preview-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    background: var(--bg-secondary);
+}
+
+.categoria-cor-preview {
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+.categoria-info-preview {
+    flex: 1;
+    text-align: left;
+}
+
+.categoria-nome-preview {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+}
+
+.categoria-descricao-preview {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.usage-info {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+}
+
+.usage-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.usage-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.usage-item i {
+    width: 1rem;
+    height: 1rem;
+    color: var(--primary-color);
+}
+
+@media (max-width: 1024px) {
+    .edit-category-layout {
+        grid-template-columns: 1fr;
+        max-width: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .category-form .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .preview-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .categoria-info-preview {
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nomeInput = document.getElementById('id_nome');
+    const descricaoInput = document.getElementById('id_descricao');
+    const corInput = document.getElementById('id_cor');
+    const iconeInput = document.getElementById('id_icone');
+    
+    const nomePreview = document.getElementById('categoriaNomePreview');
+    const descricaoPreview = document.getElementById('categoriaDescricaoPreview');
+    const corPreview = document.getElementById('categoriaCorPreview');
+    const iconePreview = document.getElementById('categoriaIconePreview');
+    const colorPicker = document.getElementById('colorPreview');
+    
+    // Update previews
+    function updatePreview() {
+        if (nomeInput && nomePreview) {
+            nomePreview.textContent = nomeInput.value || 'Nome da categoria';
+        }
+        
+        if (descricaoInput && descricaoPreview) {
+            descricaoPreview.textContent = descricaoInput.value || 'Sem descrição';
+        }
+        
+        if (corInput && corPreview && colorPicker) {
+            const color = corInput.value;
+            corPreview.style.backgroundColor = color;
+            colorPicker.style.backgroundColor = color;
+        }
+        
+        if (iconeInput && iconePreview) {
+            const iconName = iconeInput.value;
+            iconePreview.setAttribute('data-feather', iconName);
+            feather.replace();
+        }
+    }
+    
+    // Add event listeners
+    if (nomeInput) nomeInput.addEventListener('input', updatePreview);
+    if (descricaoInput) descricaoInput.addEventListener('input', updatePreview);
+    if (corInput) corInput.addEventListener('input', updatePreview);
+    if (iconeInput) iconeInput.addEventListener('change', updatePreview);
+    
+    // Initial preview update
+    updatePreview();
+});
+</script>
+{% endblock %}

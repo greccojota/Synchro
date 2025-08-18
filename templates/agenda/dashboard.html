@@ -1,0 +1,252 @@
+{% extends "base/layout.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Synchro{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Visão geral da sua agenda{% endblock %}
+
+{% block content %}
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ eventos_hoje|default:0 }}</div>
+            <div class="stat-label">Eventos Hoje</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-number">{{ eventos_semana|default:0 }}</div>
+            <div class="stat-label">Esta Semana</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-number">{{ eventos_mes|default:0 }}</div>
+            <div class="stat-label">Este Mês</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-number">{{ eventos_atrasados|default:0 }}</div>
+            <div class="stat-label">Atrasados</div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i data-feather="zap"></i>
+                Ações Rápidas
+            </h3>
+        </div>
+        <div class="card-body">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <a href="{% url 'agenda:evento' %}" class="btn btn-primary">
+                    <i data-feather="plus"></i>
+                    Novo Evento
+                </a>
+                
+                <a href="{% url 'agenda:categorias' %}" class="btn btn-secondary">
+                    <i data-feather="tag"></i>
+                    Categorias
+                </a>
+                
+                <a href="{% url 'agenda:lista' %}" class="btn btn-secondary">
+                    <i data-feather="calendar"></i>
+                    Ver Eventos
+                </a>
+                
+                <a href="{% url 'agenda:historico' %}" class="btn btn-secondary">
+                    <i data-feather="archive"></i>
+                    Histórico
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plan Info -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i data-feather="user"></i>
+                Informações da Conta
+            </h3>
+        </div>
+        <div class="card-body text-center">
+            {% if perfil %}
+                <span class="plan-badge {{ perfil.plano }}">
+                    Plano {{ perfil.plano|capfirst }}
+                </span>
+                {% if perfil.plano == 'free' %}
+                    <p style="margin-top: 1rem; color: var(--text-secondary);">
+                        {{ eventos_mes|default:0 }} de {{ perfil.limite_eventos_mes }} eventos utilizados este mês
+                    </p>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    position: relative;
+}
+
+.stat-card.stat-alert {
+    border-left: 4px solid var(--danger-color);
+}
+
+.stat-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    opacity: 0.3;
+}
+
+.plan-status {
+    text-align: center;
+}
+
+.plan-description {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.usage-meter {
+    margin-top: 1rem;
+}
+
+.usage-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.usage-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success-color), var(--warning-color));
+    transition: width 0.3s ease;
+}
+
+.usage-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.category-item-mini {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.category-color {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.category-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.category-count {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.quick-action {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.quick-action:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-md);
+}
+
+.quick-action-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.quick-action-icon.primary { background: var(--primary-color); }
+.quick-action-icon.success { background: var(--success-color); }
+.quick-action-icon.info { background: var(--info-color); }
+.quick-action-icon.warning { background: var(--warning-color); }
+
+.quick-action-content h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.quick-action-content p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

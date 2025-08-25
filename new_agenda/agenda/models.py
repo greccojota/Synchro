@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
-from datetime import datetime, timedelta
+from django.utils import timezone
+from datetime import timedelta
+import pytz
 # Create your models here.
 
 class Evento(models.Model):
@@ -18,22 +20,22 @@ class Evento(models.Model):
         return self.titulo
 
     def get_data_evento(self):
-        return self.dt_evento.strftime('%d/%m/%Y %H:%M Hrs')
+        """Retorna data formatada no timezone local"""
+        br_timezone = pytz.timezone('America/Sao_Paulo')
+        dt_local = self.dt_evento.astimezone(br_timezone)
+        return dt_local.strftime('%d/%m/%Y %H:%M Hrs')
 
     def get_data_input_evento(self):
-        return self.dt_evento.strftime('%Y-%m-%dT%H:%M')
+        """Retorna data no formato HTML datetime-local no timezone local"""
+        br_timezone = pytz.timezone('America/Sao_Paulo')
+        dt_local = self.dt_evento.astimezone(br_timezone)
+        return dt_local.strftime('%Y-%m-%dT%H:%M')
 
     def get_evento_atrasado(self):
-        #if datetime.fromisoformat(self.dt_evento.strftime('%Y-%m-%d %H:%M:%S')) < datetime.now():
-        if self.dt_evento < datetime.now():
-            return True
-        else:
-            return False
+        """Verifica se o evento está atrasado usando timezone-aware datetime"""
+        return self.dt_evento < timezone.now()
 
     def get_evento_30min(self):
-        #diferenca = datetime.fromisoformat(self.dt_evento.strftime('%Y-%m-%d %H:%M:%S')) - datetime.now()
-        diferenca = self.dt_evento - datetime.now()
-        if diferenca <= timedelta(hours=1):
-            return True
-        else:
-            return False
+        """Verifica se o evento está próximo (dentro de 1 hora)"""
+        diferenca = self.dt_evento - timezone.now()
+        return diferenca <= timedelta(hours=1) and diferenca > timedelta(0)
